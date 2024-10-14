@@ -277,7 +277,7 @@ class SiamRPNPP():
         outputs = self.outputs  # (N,2x5,25,25)
         pred_cls = outputs['cls']
         pred_reg = outputs['loc']
-        # b==batch, a2== , h is actually width, w is actually height
+        # b==batch, a2== 2 (cls has 2 layers: postive and negative. if it is loc, loc has 4 layers), h is clsmap's height, w is clsmap's width
         b, a2, h, w = pred_cls.size()
 
         assert centerpoint[0] == (h - 1) / 2
@@ -286,9 +286,16 @@ class SiamRPNPP():
 
         anchor_num = a2 // 2
         anchors2 = self.generate_all_anchors()
+        # anchor_box is [x1, y1, x2, y2]
         anchor_box = anchors2.all_anchors[0]
+        # [cx, cy, w, h]
         anchor_center = anchors2.all_anchors[1]
 
+        # Initial shape: x2's initial shape is (4, 1, 1).
+        # Adding zero: zero's shape is (4, size, size).
+        # Broadcasting mechanism: When executing x2 + zero, NumPy uses broadcasting to extend (4, 1, 1) to (4, size, size) to perform element-wise addition.
+        # Therefore, x2's shape changes from (4, 1, 1) to (4, size, size).
+        # so x2's shape == (4, size, size), so size == h is true
         assert anchor_box.shape[2] == h, 'Wrong anchor location'
 
         label_cls = 0 * np.ones((b, anchor_num, h, w), dtype=np.int64)
