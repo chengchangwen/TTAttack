@@ -277,6 +277,7 @@ class SiamRPNPP():
         outputs = self.outputs  # (N,2x5,25,25)
         pred_cls = outputs['cls']
         pred_reg = outputs['loc']
+        # b==batch, a2== , h is actually width, w is actually height
         b, a2, h, w = pred_cls.size()
 
         assert centerpoint[0] == (h - 1) / 2
